@@ -126,3 +126,37 @@ def FPFParity_EncoderCore(seq_c: tuple[int, ...], seq_d:tuple[int, ...]) -> tupl
     return seq_g
 
 ########################################################################################################################
+def XORParity_EncoderCore(seq_c: tuple[int, ...], seq_d:tuple[int, ...]) -> tuple[int, ...]:
+    '''
+    Generate binary sequence G from binary sequences C and D.\n
+    The input sequences C and D must have the same length.\n
+    The elements in each sequence must be 0 or 1 (int).\n
+
+    :param seq_c:
+    :param seq_d:
+    :return:
+    '''
+    assert isinstance(seq_c, tuple)
+    assert isinstance(seq_d, tuple)
+    seqLen = len(seq_c)
+    assert len(seq_d) == seqLen
+
+    # Step 1:
+    seq_e_list = []
+    for idx_i in range(0, seqLen):
+        assert seq_c[idx_i] in (0, 1)
+        assert seq_d[idx_i] in (0, 1)
+        if idx_i % 2 == 0:  # XOR
+            if seq_c[idx_i] == seq_d[idx_i]:
+                seq_e_list.append(0)
+            else:
+                seq_e_list.append(1)
+        elif idx_i % 2 == 1:  # XOR
+            if seq_c[idx_i] == seq_d[idx_i]:
+                seq_e_list.append(0)
+            else:
+                seq_e_list.append(1)
+        else:
+            assert False
+    seq_g = tuple(seq_e_list)
+    return seq_g

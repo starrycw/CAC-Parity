@@ -11,7 +11,7 @@ class CACParitySeqEncoderTop:
         :param n_seq: 序列位宽
         :param nDataTransCycle: 数据传输周期。即：传输这么多周期的数据后生成校验序列。
         '''
-        assert CACName in ('FTF', 'FPF')
+        assert CACName in ('FTF', 'FPF', 'XORParity')
         assert isinstance(n_seq, int)
         assert n_seq > 3
 
@@ -166,6 +166,9 @@ class CACParitySeqEncoderTop:
         elif self._getParam_CACName() == 'FPF':
             newParitySeq_tuple = CACParitySeq_EncoderCore.FPFParity_EncoderCore(seq_c=self._currentParitySeq_get(),
                                                                                 seq_d=copy.deepcopy(seq2bTrans))
+        elif self._getParam_CACName() == 'XORParity':
+            newParitySeq_tuple = CACParitySeq_EncoderCore.XORParity_EncoderCore(seq_c=self._currentParitySeq_get(),
+                                                                                seq_d=copy.deepcopy(seq2bTrans))
         else:
             assert False
 
@@ -187,6 +190,13 @@ class CACParitySeqEncoderTop:
         paritySeqGenerated = copy.deepcopy(self._currentParitySeq_get())
         self._changeState_event_parityHasBeenReadOut()
         return paritySeqGenerated
+
+    def get_currentState(self):
+        '''
+        返回当前状态。
+        :return:
+        '''
+        return copy.deepcopy(self._state_currentState)
 
 
 
