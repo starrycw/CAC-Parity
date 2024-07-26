@@ -175,7 +175,7 @@ class DetectionEvaluation:
             assert errorGenParam[1] >= 0
             assert self.getParam_nDataTransCycle() >= errorGenParam[0]
             assert errorGenParam[0] > 0
-            return ('NF_oneBitFlip', copy.deepcopy(errorGenParam[0], copy.deepcopy(errorGenParam[1])))
+            return ('NF_oneBitFlip', copy.deepcopy(errorGenParam[0]), copy.deepcopy(errorGenParam[1]))
 
         else:
             assert False
@@ -184,6 +184,7 @@ class DetectionEvaluation:
         return copy.deepcopy(self._task_errorInjectorActive)
 
     def getParam_errorInjectorType(self):
+        assert False # Do not use!
         return copy.deepcopy(self._task_errorInjectorType)
 
     def run_step1_createSimuTasks(self, tasks_idTuple, tasks_encoderTypeTuple, tasks_errorGenType, tasks_errorGenParam):
@@ -222,6 +223,81 @@ class DetectionEvaluation:
         print('--- ERR-TYPE: {}'.format(self.getParam_errorInjectorType()))
         print('--- ERR-ACTIVE: {}'.format(self.getParam_errorInjectorActive()))
         print('---------------')
+
+    def run_step1_createSimuTasks_genError(self, tasks_idTuple, tasks_encoderTypeTuple, tasks_errorGenType, tasks_errorGenParam):
+        '''
+        添加仿真任务。
+        tasks_idTuple, tasks_encoderTypeTuple应当为2个元素数目相同的元组。三个元组中同一idx的元素之间是关联的。\n
+        其中:\n
+        tasks_idTuple中为任务的id。\n
+        tasks_encoderTypeTuple中为任务的编码器类型，例如'FPF','FTF','XORParity'。\n
+        tasks_errorGenType和tasks_errorGenParam指定了故障类型，详见generateErrorInjectorConfig方法的注释。\n
+
+        需要注意的是，在该仿真中，所有任务具有相同的位宽、源数据、故障、数据连续传输周期；它们彼此不同的是编码器类型。\n
+        此外，本方法不检查tasks_idTuple, tasks_encoderTypeTuple, tasks_errorType是否有错误！如果存在错误，可能到仿真运行阶段才会报错！
+        :param tasks_idTuple:
+        :param tasks_encoderTypeTuple:
+        :param tasks_errorGenType:
+        :param tasks_errorGenParam:
+        :return:
+        '''
+        assert isinstance(tasks_idTuple, tuple)
+        assert isinstance(tasks_encoderTypeTuple, tuple)
+        assert len(tasks_idTuple) == len(tasks_encoderTypeTuple)
+        self._taskList_id = copy.deepcopy(tasks_idTuple)
+        self._taskList_encoder = copy.deepcopy(tasks_encoderTypeTuple)
+        # for idx_j in range(0, len(tasks_encoderTypeTuple)):
+        #     self._taskSimuState_seqTransmitted_lastCycle.append(self.getParam_bitwidth() * [0])
+        self._task_errorInjectorType = (copy.deepcopy(tasks_errorGenType), copy.deepcopy(tasks_errorGenParam))
+
+
+        # Get self._task_errorInjectorActive
+        self._task_errorInjectorActive = self.generateErrorInjectorConfig(errorGenType=copy.deepcopy(tasks_errorGenType),
+                                                                          errorGenParam=copy.deepcopy(tasks_errorGenParam))
+        print('[DetectionEval] - Step1 OK!')
+        print('---  ID: {}'.format(tasks_idTuple))
+        print('--- ENC: {}'.format(tasks_encoderTypeTuple))
+        print('--- ERR-TYPE: {}'.format(self.getParam_errorInjectorType()))
+        print('--- ERR-ACTIVE: {}'.format(self.getParam_errorInjectorActive()))
+        print('---------------')
+
+    def run_step1_createSimuTasks_specifyError(self, tasks_idTuple, tasks_encoderTypeTuple, tasks_errorInjectorActive):
+        '''
+        添加仿真任务。
+        tasks_idTuple, tasks_encoderTypeTuple应当为2个元素数目相同的元组。三个元组中同一idx的元素之间是关联的。\n
+        其中:\n
+        tasks_idTuple中为任务的id。\n
+        tasks_encoderTypeTuple中为任务的编码器类型，例如'FPF','FTF','XORParity'。\n
+        tasks_errorInjectorActive指定了故障，详见generateErrorInjectorConfig方法。\n
+        需要注意的是，tasks_errorInjectorActive直接指定具体的故障，而不是给定故障类型与配置然后由generateErrorInjectorConfig方法生成。这是与run_step1_createSimuTasks_genError方法的不同之处。\n
+
+        需要注意的是，在该仿真中，所有任务具有相同的位宽、源数据、故障、数据连续传输周期；它们彼此不同的是编码器类型。\n
+        此外，本方法不检查tasks_idTuple, tasks_encoderTypeTuple, tasks_errorType是否有错误！如果存在错误，可能到仿真运行阶段才会报错！
+        :param tasks_idTuple:
+        :param tasks_encoderTypeTuple:
+        :param tasks_errorInjectorActive:
+        :return:
+        '''
+        assert isinstance(tasks_idTuple, tuple)
+        assert isinstance(tasks_encoderTypeTuple, tuple)
+        assert len(tasks_idTuple) == len(tasks_encoderTypeTuple)
+        self._taskList_id = copy.deepcopy(tasks_idTuple)
+        self._taskList_encoder = copy.deepcopy(tasks_encoderTypeTuple)
+        # for idx_j in range(0, len(tasks_encoderTypeTuple)):
+        #     self._taskSimuState_seqTransmitted_lastCycle.append(self.getParam_bitwidth() * [0])
+        self._task_errorInjectorType = None
+
+
+        # Get self._task_errorInjectorActive
+        self._task_errorInjectorActive = copy.deepcopy(tasks_errorInjectorActive)
+        print('[DetectionEval] - Step1 OK!')
+        print('---  ID: {}'.format(tasks_idTuple))
+        print('--- ENC: {}'.format(tasks_encoderTypeTuple))
+        # print('--- ERR-TYPE: {}'.format(self.getParam_errorInjectorType()))
+        print('--- ERR-ACTIVE: {}'.format(self.getParam_errorInjectorActive()))
+        print('---------------')
+
+
 
     def _substep_genSourceSeq_random(self, seqType):
         '''
@@ -314,7 +390,8 @@ class DetectionEvaluation:
         return seqWithError_tuple
 
 
-    def run_step2_startSimu(self, n_runCycle, seqType, initialSeqType):
+    def run_step2_startSimu(self, n_runCycle, seqType, initialSeqType, logsavelevel = 'info'):
+        assert logsavelevel in ('info', 'mini')
         assert initialSeqType in ('all0', 'theLastParitySeq')
         assert isinstance(n_runCycle, int)
         assert n_runCycle > 0
@@ -354,26 +431,28 @@ class DetectionEvaluation:
         logFile.write('CACParitySeq_DetectionEvaluation\n')
         logFile.write('---------------------------------\n')
         logFile.write('Simulation Info:\n')
-        logFile.write('--- Timestamp: {}')
-        logFile.write('--- Number of tasks: {}\n'.format(self.getParam_numberOfTasks()))
-        logFile.write('--- Bitwidth: {}\n'.format(self.getParam_bitwidth()))
-        logFile.write('--- Data trans cycle: {}\n'.format(self.getParam_nDataTransCycle()))
-        logFile.write('--- Fault injector active: {}\n'.format(self.getParam_errorInjectorActive()))
-        logFile.write('--- Seq type: {}\n'.format(seqType))
-        logFile.write('--- InitialSeqType: {}\n'.format(initialSeqType))
-        logFile.write('--- Task details:\n')
+        logFile.write('- Timestamp: {}\n'.format(note_timestring))
+        logFile.write('- Number of tasks: {}\n'.format(self.getParam_numberOfTasks()))
+        logFile.write('- Bitwidth: {}\n'.format(self.getParam_bitwidth()))
+        logFile.write('- Data trans cycle: {}\n'.format(self.getParam_nDataTransCycle()))
+        logFile.write('- Fault injector active: {}\n'.format(self.getParam_errorInjectorActive()))
+        logFile.write('- Seq type: {}\n'.format(seqType))
+        logFile.write('- InitialSeqType: {}\n'.format(initialSeqType))
+        logFile.write('- Task details:\n')
         for idx_i in range(0, self.getParam_numberOfTasks()):
             logFile.write('--- Task {}: ID={}, Encoder={}\n'.format(idx_i, self.getParam_taskInfo_id(task_idx=idx_i), self.getParam_taskInfo_encoder(task_idx=idx_i)))
         logFile.flush() #刷新缓冲区
         for simuCycle_i in range(0, n_runCycle):
-            logFile.write('---------------------------------\n')
-            logFile.write('# SimulationRound-{}\n'.format(simuCycle_i))
+            if logsavelevel == 'info':
+                logFile.write('---------------------------------\n')
+                logFile.write('# Round-{}\n'.format(simuCycle_i))
 
             # 非Parity数据传输周期
             for dataTransCycle_i in range(1, self.getParam_nDataTransCycle() + 1):
                 # 生成原始数据
                 seqNoError = self._substep_genSourceSeq_random(seqType=seqType)
-                logFile.write('- Cycle{} - Seq generated: {}\n'.format(dataTransCycle_i, seqNoError))
+                if logsavelevel == 'info':
+                    logFile.write('- Cycle{} - {}\n'.format(dataTransCycle_i, seqNoError))
 
                 # # 数据传输 - 无故障对照
                 # if dataTransCycle_i == 1:
@@ -443,20 +522,62 @@ class DetectionEvaluation:
                 cnt_taskList_caseAll[taskIdx_ii] = cnt_taskList_caseAll[taskIdx_ii] + 1
                 if paritySeqsList_sinkGen[taskIdx_ii] == paritySeqsList_sinkRec_withError[taskIdx_ii]:
                     cnt_taskList_caseHidden[taskIdx_ii] = cnt_taskList_caseHidden[taskIdx_ii] + 1
-                    logFile.write('- task {} - HIDDEN: SinkGen_{} = SinkRec_{}\n'.format(taskIdx_ii, paritySeqsList_sinkGen[taskIdx_ii], paritySeqsList_sinkRec_withError[taskIdx_ii]))
+                    if logsavelevel == 'info':
+                        logFile.write('- task {} - HIDDEN: Gen_{} = Rec_{} <- {}\n'.format(taskIdx_ii,
+                                                                                                          paritySeqsList_sinkGen[taskIdx_ii],
+                                                                                                          paritySeqsList_sinkRec_withError[taskIdx_ii],
+                                                                                                          paritySeqsList_sinkRec_noError[taskIdx_ii]))
                 elif paritySeqsList_sinkGen[taskIdx_ii] != paritySeqsList_sinkRec_withError[taskIdx_ii]:
                     cnt_taskList_caseDetected[taskIdx_ii] = cnt_taskList_caseDetected[taskIdx_ii] + 1
-                    logFile.write('- task {} - DETECTED: SinkGen_{} = SinkRec_{}\n'.format(taskIdx_ii, paritySeqsList_sinkGen[taskIdx_ii], paritySeqsList_sinkRec_withError[taskIdx_ii]))
+                    if logsavelevel == 'info':
+                        logFile.write('- task {} - DETECTED: Gen_{} != Rec_{} <- {}\n'.format(taskIdx_ii,
+                                                                                                            paritySeqsList_sinkGen[taskIdx_ii],
+                                                                                                            paritySeqsList_sinkRec_withError[taskIdx_ii],
+                                                                                                            paritySeqsList_sinkRec_noError[taskIdx_ii]))
                 else:
                     assert False
-            print('SimulationRound {} Finished! Current Data:'.format(simuCycle_i))
+
+            # Check Alg
+            for taskIdx_kk in range(0, self.getParam_numberOfTasks()):
+                if self.getParam_taskInfo_encoder(task_idx=taskIdx_kk) == 'FPF':
+                    for seqBitIdx_i in range(1, self.getParam_bitwidth() - 1):
+                        assert (paritySeqsList_sinkRec_noError[taskIdx_kk][seqBitIdx_i - 1],
+                                paritySeqsList_sinkRec_noError[taskIdx_kk][seqBitIdx_i],
+                                paritySeqsList_sinkRec_noError[taskIdx_kk][seqBitIdx_i + 1]) in ((0, 0, 0),
+                                                                                                 (0, 0, 1),
+                                                                                                 (0, 1, 1),
+                                                                                                 (1, 0, 0),
+                                                                                                 (1, 1, 0),
+                                                                                                 (1, 1, 1))
+                if self.getParam_taskInfo_encoder(task_idx=taskIdx_kk) == 'FTF':
+                    for seqBitIdx_i in range(0, self.getParam_bitwidth() - 1):
+                        if seqBitIdx_i % 2 == 0:
+                            assert (paritySeqsList_sinkRec_noError[taskIdx_kk][seqBitIdx_i],
+                                    paritySeqsList_sinkRec_noError[taskIdx_kk][seqBitIdx_i + 1]) in ((0, 0),
+                                                                                                     (1, 0),
+                                                                                                     (1, 1))
+                        if seqBitIdx_i % 2 == 1:
+                            assert (paritySeqsList_sinkRec_noError[taskIdx_kk][seqBitIdx_i],
+                                    paritySeqsList_sinkRec_noError[taskIdx_kk][seqBitIdx_i + 1]) in ((0, 0),
+                                                                                                     (0, 1),
+                                                                                                     (1, 1))
+
+
+
+            # logFile.write('- GOLDEN: {}\n'.format())
+            print('Round {} Finished! Current statistical result:'.format(simuCycle_i))
             print('--- Case ALL: {}, Case Hidden: {}, Case Detected: {}.\n'.format(cnt_taskList_caseAll,
                                                                                          cnt_taskList_caseHidden,
                                                                                          cnt_taskList_caseDetected))
-            logFile.write('SimulationRound {} Finished! Current Data:\n'.format(simuCycle_i))
-            logFile.write('--- Case ALL: {}, Case Hidden: {}, Case Detected: {}.\n'.format(cnt_taskList_caseAll,
-                                                                                         cnt_taskList_caseHidden,
-                                                                                         cnt_taskList_caseDetected))
+            if logsavelevel == 'info':
+                logFile.write('Round {} Finished! Current statistical result:\n'.format(simuCycle_i))
+                logFile.write('--- Case ALL: {}, Case Hidden: {}, Case Detected: {}.\n'.format(cnt_taskList_caseAll,
+                                                                                             cnt_taskList_caseHidden,
+                                                                                             cnt_taskList_caseDetected))
+
+        logFile.write('-Result: ALL = {}, Hidden = {}, Detected = {}.\n'.format(cnt_taskList_caseAll,
+                                                                                       cnt_taskList_caseHidden,
+                                                                                       cnt_taskList_caseDetected))
         logFile.close()
 
 
