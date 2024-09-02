@@ -160,3 +160,9 @@ def XORParity_EncoderCore(seq_c: tuple[int, ...], seq_d:tuple[int, ...]) -> tupl
             assert False
     seq_g = tuple(seq_e_list)
     return seq_g
+
+###############################
+###############################
+# print(FTFParity_EncoderCore(seq_c=(1, 1, 1, 1, 1, 1), seq_d=(0, 0, 1, 1, 1, 0)))
+#
+# print(FTFParity_EncoderCore(seq_c=(1, 1, 1, 0, 1, 1), seq_d=(0, 0, 1, 1, 1, 0)))
