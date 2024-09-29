@@ -390,16 +390,17 @@ class DetectionEvaluation:
         return seqWithError_tuple
 
 
-    def run_step2_startSimu(self, n_runCycle, seqType, initialSeqType, logsavelevel = 'info'):
-        assert logsavelevel in ('info', 'mini')
+    def run_step2_startSimu(self, n_runCycle, seqType, initialSeqType, logsavelevel = 'no'):
+        assert logsavelevel in ('info', 'mini', 'no')
         assert initialSeqType in ('all0', 'theLastParitySeq')
         assert isinstance(n_runCycle, int)
         assert n_runCycle > 0
 
 
         # Export to files
-        note_timestring = datetime.datetime.now().strftime('%Y_%m_%d-%H_%M_%S')
-        logFile =  open("exported_files/DetectionEval_{}_{}.log".format(note_timestring, random.random()), 'x')
+        if logsavelevel != 'no':
+            note_timestring = datetime.datetime.now().strftime('%Y_%m_%d-%H_%M_%S')
+            logFile =  open("exported_files/DetectionEval_{}_{}.log".format(note_timestring, random.random()), 'x')
 
         # Initialize vars
         taskList_seqTransmittedNow = []
@@ -428,24 +429,25 @@ class DetectionEvaluation:
 
 
         # Start!
-        logFile.write('CACParitySeq_DetectionEvaluation\n')
-        logFile.write('---------------------------------\n')
-        logFile.write('Simulation Info:\n')
-        logFile.write('- Timestamp: {}\n'.format(note_timestring))
-        logFile.write('- Number of tasks: {}\n'.format(self.getParam_numberOfTasks()))
-        logFile.write('- Bitwidth: {}\n'.format(self.getParam_bitwidth()))
-        logFile.write('- Data trans cycle: {}\n'.format(self.getParam_nDataTransCycle()))
-        logFile.write('- Fault injector active: {}\n'.format(self.getParam_errorInjectorActive()))
-        logFile.write('- Seq type: {}\n'.format(seqType))
-        logFile.write('- InitialSeqType: {}\n'.format(initialSeqType))
-        logFile.write('- Task details:\n')
-        for idx_i in range(0, self.getParam_numberOfTasks()):
-            logFile.write('--- Task {}: ID={}, Encoder={}\n'.format(idx_i, self.getParam_taskInfo_id(task_idx=idx_i), self.getParam_taskInfo_encoder(task_idx=idx_i)))
-        logFile.flush() #刷新缓冲区
-        for simuCycle_i in range(0, n_runCycle):
-            if logsavelevel == 'info':
-                logFile.write('---------------------------------\n')
-                logFile.write('# Round-{}\n'.format(simuCycle_i))
+        if logsavelevel != 'no':
+            logFile.write('CACParitySeq_DetectionEvaluation\n')
+            logFile.write('---------------------------------\n')
+            logFile.write('Simulation Info:\n')
+            logFile.write('- Timestamp: {}\n'.format(note_timestring))
+            logFile.write('- Number of tasks: {}\n'.format(self.getParam_numberOfTasks()))
+            logFile.write('- Bitwidth: {}\n'.format(self.getParam_bitwidth()))
+            logFile.write('- Data trans cycle: {}\n'.format(self.getParam_nDataTransCycle()))
+            logFile.write('- Fault injector active: {}\n'.format(self.getParam_errorInjectorActive()))
+            logFile.write('- Seq type: {}\n'.format(seqType))
+            logFile.write('- InitialSeqType: {}\n'.format(initialSeqType))
+            logFile.write('- Task details:\n')
+            for idx_i in range(0, self.getParam_numberOfTasks()):
+                logFile.write('--- Task {}: ID={}, Encoder={}\n'.format(idx_i, self.getParam_taskInfo_id(task_idx=idx_i), self.getParam_taskInfo_encoder(task_idx=idx_i)))
+            logFile.flush() #刷新缓冲区
+            for simuCycle_i in range(0, n_runCycle):
+                if logsavelevel == 'info':
+                    logFile.write('---------------------------------\n')
+                    logFile.write('# Round-{}\n'.format(simuCycle_i))
 
             # 非Parity数据传输周期
             for dataTransCycle_i in range(1, self.getParam_nDataTransCycle() + 1):
@@ -575,10 +577,11 @@ class DetectionEvaluation:
                                                                                              cnt_taskList_caseHidden,
                                                                                              cnt_taskList_caseDetected))
 
-        logFile.write('-Result: ALL = {}, Hidden = {}, Detected = {}.\n'.format(cnt_taskList_caseAll,
+        if logsavelevel != 'no':
+            logFile.write('-Result: ALL = {}, Hidden = {}, Detected = {}.\n'.format(cnt_taskList_caseAll,
                                                                                        cnt_taskList_caseHidden,
                                                                                        cnt_taskList_caseDetected))
-        logFile.close()
+            logFile.close()
 
 
 
