@@ -4,7 +4,7 @@
 <!-- Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.                   -->
 <!-- Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.   -->
 
-<Project Product="Vivado" Version="7" Minor="67" Path="D:/Starry_Workspace/Repositories/GitHub_starrycw/CAC-Parity/Verilog/CACParityEncoder/CACParityEncoder.xpr">
+<Project Product="Vivado" Version="7" Minor="67" Path="E:/Starry_Workspace/Respositories/GitHub_starrycw/Works/CAC-Parity/Verilog/CACParityEncoder/CACParityEncoder.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="ebf823e516584a708e624e47aa85e089"/>
@@ -153,6 +153,22 @@
         </FileInfo>
       </File>
       <File Path="$PSRCDIR/sources_1/new/OED_ParityCmpCore.v">
+        <FileInfo>
+          <Attr Name="AutoDisabled" Val="1"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/new/PPC_EncoderTop_RectangularArray.v">
+        <FileInfo>
+          <Attr Name="AutoDisabled" Val="1"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/new/PPC_EncoderCore.v">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
